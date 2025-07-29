@@ -9,7 +9,7 @@ CAN总线
 - 两根通信线(CAN_H,CAN_L)，**无需共地**  
 - 高速CAN(ISO11898): 125k~1Mbps, <40m  
 - 低速CAN(ISO11519): 10k~125kbps, <1km  
-- **异步**，通讯**无需**时钟线，需要约定通讯速率  
+- **异步**，通讯**无需**时钟线，**需要**约定通讯速率  
 - **半双工**，支持**多设备**，通过总线仲裁判断顺序  
 - 11/29位报文ID(标准/扩展),区分消息，决定优先级  
 - 可配置至多8字节的有效载荷  
@@ -66,23 +66,33 @@ CAN总线
   - 将正常数据流与错误、过载帧隔开，标志错误、过载帧的特异性
   - 保持CAN总线在发送正常数据流的活跃状态，防止被误认为总线空闲
 
+## 三、采样
+### 1. 问题
+- 当接收方以约定时长进行采样但采样点未对齐中心时，误差会随时间增加而积累，采样点逐渐偏离，产生错误
+### 2. 解决方案
+- CAN协议划分了每个数据位的时长分为同步段（SS）、传播时间段（PTS）、相位缓冲段1（PBS1）和相位缓冲段2（PBS2），每个段又由若干个最小时间单位（Tq）构成![](CAN_img/采样.png)
+- 硬同步
+  - 每个设备都有一个位时序计时周期，当某个设备（发送方）率先发送报文，其他所有设备（接收方）收到SOF的下降沿时，接收方会将自己的位时序计时周期拨到SS段的位置，与发送方的位时序计时周期保持同步
+  - 硬同步只在帧的第一个下降沿（SOF下降沿）有效
+  - 经过硬同步后，若发送方和接收方的时钟没有误差，则后续所有数据位的采样点必然都会对齐数据位中心附近
+- 再同步
+  - 若发送方或接收方的时钟有误差，随着误差积累，数据位边沿逐渐偏离SS段，则此时接收方根据再同步补偿宽度值（SJW）通过加长PBS1段，或缩短PBS2段，以调整同步
+  - 再同步可以发生在第一个下降沿之后的每个数据位跳变边沿
+  
+## 四、多设备问题
+### 1. 先占先得
+- 若当前已经有设备正在操作总线发送数据帧/遥控帧，则其他任何设备不能再同时发送数据帧/遥控帧（可以发送错误帧/过载帧破坏当前数据）
+- 任何设备检测到连续11个隐性电平，即认为总线空闲，只有在总线空闲时，设备才能发送数据帧/遥控帧
+- 一旦有设备正在发送数据帧/遥控帧，总线就会变为活跃状态，必然不会出现连续11个隐性电平，其他设备自然也不会破坏当前发送
+- 若总线活跃状态其他设备有发送需求，则需要等待总线变为空闲，才能执行发送需求
+### 2. 非破坏性仲裁
+- 若多个设备的发送需求同时到来或因等待而同时到来，则CAN总线协议会根据ID号（仲裁段）进行非破坏性仲裁，ID号小的（优先级高）取到总线控制权，ID号大的（优先级低）仲裁失利后将转入接收状态，等待下一次总线空闲时再尝试发送
+- 实现非破坏性仲裁需要两个要求：
+  - 线与特性：总线上任何一个设备发送显性电平0时，总线就会呈现显性电平0状态，只有当所有设备都发送隐性电平1时，总线才呈现隐性电平1状态，即：0 & X & X = 0，1 & 1 & 1 = 1
+  - 回读机制：每个设备发出一个数据位后，都会读回总线当前的电平状态，以确认自己发出的电平是否被真实地发送出去了，根据线与特性，发出0读回必然是0，发出1读回不一定是1
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## STM32CAN外设
-### 1. 简介
+# STM32CAN外设
+###  简介
 - STM32内置bxCAN外设(CAN控制器)，支持CAN2.0A和2.0B,可以自动发送CAN报文和按照过滤器自动接收指定CAN报文，程序只需要处理报文数据而无需关注总线的电平细节
 - 波特率最高可到达**1Mbps**
 - 3个可配置优先级的发送邮箱
@@ -90,8 +100,22 @@ CAN总线
 - 14个过滤器组(互联型28个)
 - 事件触发通信、自动离线恢复、自动唤醒、禁止自动重传、接收FIFO溢出处理方式可配置、发送优先级可配置、双CAN模式
 
+## CAN外设在Stm32CubeMx中的配置
+#### 使能CAN外设
+![](CAN_img/CAN配置1.png "CAN配置1")
+#### 配置CAN外设
+![](CAN_img/CAN配置2.png "CAN配置2")
+
+- **CAN总线通讯频率计算公式：**  
+    **CAN波特率=APB总线频率/分频系数/（TBS1+TBS2+SS）**  
+    在Stm32中，CAN1，CAN2均挂载在APB1上，TBS1，TBS2为图中两个Time Quanta，SS在Stm32固定为1  
+#### 使能CAN外设的接受中断
+![](CAN_img/CAN配置3.png "CAN配置3")
+- RX0表示使用FIFO0，RX1表示使用FIFO1
+
 ## FIFO过滤器的配置
 
+#### 在HAL库中，过滤器通过`HAL_CAN_ConfigFilter()`函数配置
 #### 其函数原型如下
 ```C
 HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef *hcan,
@@ -99,9 +123,9 @@ HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef *hcan,
 ```
 
 - 其中结构体`CAN_FilterTypeDef`定义如下
-```C
-    typedef struct
-    {
+  ```C
+  typedef struct
+  {
     uint32_t FilterIdHigh;  //CAN过滤器的高16位标识符
     uint32_t FilterIdLow;   //CAN过滤器的低16位标识符
     uint32_t FilterMaskIdHigh;  //设置CAN过滤器高16位掩码
@@ -112,8 +136,8 @@ HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef *hcan,
     uint32_t FilterScale;   //过滤器宽度
     uint32_t FilterActivation;  //是否启用过滤器
     uint32_t SlaveStartFilterBank;  //给CAN2的起始过滤器编号
-    } CAN_FilterTypeDef;
-```
+  } CAN_FilterTypeDef;
+  ```
   - 其中`FilterFIFOAssignment`选择报文匹配哪个FIFO，可选值：`CAN_RX_FIFO0`和`CAN_RX_FIFO1`，分别代表FIFO0和FIFO1
 
   - 其中`FilterMode`有两个可选值，`CAN_FILTERMODE_IDMASK`和`CAN_FILTERMODE_IDLIST`，分别表示掩码模式和列表模式
@@ -142,7 +166,7 @@ HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef *hcan,
     filter.FilterMaskIdLow = 0;
     filter.FilterMaskIdHigh = 0;  //四项均为0，
     HAL_CAN_ConfigFilter(canHandle, &filter);
-  }
+  }   //配置为全通
   ```
 
 ## CAN发送
@@ -183,30 +207,57 @@ typedef struct
   - 其中`SlaveStartFilterBank`应0-28的一个整数，用作第二过滤器的起始位
   
   - 一个配置示例
-  ```C
-  void bsp_can_send_msg(CAN_HandleTypeDef* canHandle,
-                uint32_t id, uint8_t* data,
-                uint32_t data_len) {
-    uint32_t* msg_box;
-    CAN_TxHeaderTypeDef send_msg_hdr;
-    send_msg_hdr.StdId = id;
-    send_msg_hdr.IDE = CAN_ID_STD;
-    send_msg_hdr.RTR = CAN_RTR_DATA;
-    send_msg_hdr.DLC = data_len;
-    send_msg_hdr.TransmitGlobalTime = DISABLE;
+    ```C
+    void bsp_can_send_msg(CAN_HandleTypeDef* canHandle,
+                  uint32_t id, uint8_t* data,
+                  uint32_t data_len) {
+      uint32_t* msg_box;
+      CAN_TxHeaderTypeDef send_msg_hdr;
+      send_msg_hdr.StdId = id;
+      send_msg_hdr.IDE = CAN_ID_STD;
+      send_msg_hdr.RTR = CAN_RTR_DATA;
+      send_msg_hdr.DLC = data_len;
+      send_msg_hdr.TransmitGlobalTime = DISABLE;
 
-    if (canHandle->Instance == CAN1) {
-      HAL_CAN_AddTxMessage(&hcan1, &send_msg_hdr, data, msg_box);
+      if (canHandle->Instance == CAN1) {
+        HAL_CAN_AddTxMessage(&hcan1, &send_msg_hdr, data, msg_box);
+      }
+      if (canHandle->Instance == CAN2) {
+        HAL_CAN_AddTxMessage(&hcan2, &send_msg_hdr, data, msg_box);
+      }
     }
-    if (canHandle->Instance == CAN2) {
-      HAL_CAN_AddTxMessage(&hcan2, &send_msg_hdr, data, msg_box);
-    }
-}
-  ```
+    ```
 
 ## CAN接收
-一般通过中断接受，在HAL库中，通过重定义中断回调函数`HAL_CAN_RxFifo0MsgPendingCallback()`函数完成CAN的接收
-其函数原型如下  
+在HAL库中，通过`HAL_CAN_GetRxMessage()`函数接受  
+其函数原型如下：
 ```C
-__weak void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
+HAL_StatusTypeDef HAL_CAN_GetRxMessage(CAN_HandleTypeDef *hcan, uint32_t RxFifo,
+                    CAN_RxHeaderTypeDef *pHeader, uint8_t aData[]);
 ```
+一般配合中断回调函数`HAL_CAN_RxFifo0MsgPendingCallback()`函数使用完成CAN的接收
+
+- 一个配置示例
+  ```C
+  void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) { //can接受
+    uint8_t index = 0;
+    uint8_t recv_data[8];   //声明接收缓存区
+    CAN_RxHeaderTypeDef header;   //声明消息头
+    if (hcan->Instance == CAN1) {
+      HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &header, recv_data); //接受数据至缓存区
+      for (index = 0; index < 4; index++) {
+        if (header.StdId == motor_group[index].id) {
+          Motor_Feedback_Decode(&motor_group[index], recv_data);
+        }
+      }
+    }
+    if (hcan->Instance == CAN2) {
+      HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &header, recv_data); //接受数据至缓存区
+      for (index = 4; index < 8; index++) {
+        if (header.StdId == motor_group[index].id) {
+          Motor_Feedback_Decode(&motor_group[index], recv_data);
+        }
+      }
+    }
+  }
+  ```
