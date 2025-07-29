@@ -92,16 +92,13 @@ CAN总线
 
 ## FIFO过滤器的配置
 
-#### 在HAL库中，过滤器通过一个名叫 `HAL_CAN_ConfigFilter`的函数配置
 #### 其函数原型如下
 ```C
 HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef *hcan,
  const CAN_FilterTypeDef *sFilterConfig)
 ```
-- 其中结构体`CAN_HandleTypeDef`是HAL库中定义的can总线结构体，通过STM32CubeMx配置后会自动产生名为`hcan1`，`hcan2`的实例  
 
-
-其中结构体`CAN_FilterTypeDef`定义如下
+- 其中结构体`CAN_FilterTypeDef`定义如下
 ```C
     typedef struct
     {
@@ -117,37 +114,99 @@ HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef *hcan,
     uint32_t SlaveStartFilterBank;  //给CAN2的起始过滤器编号
     } CAN_FilterTypeDef;
 ```
-- 其中`FilterFIFOAssignment`选择报文匹配哪个FIFO，可选值：`CAN_RX_FIFO0`和`CAN_RX_FIFO1`，分别代表FIFO0和FIFO1
+  - 其中`FilterFIFOAssignment`选择报文匹配哪个FIFO，可选值：`CAN_RX_FIFO0`和`CAN_RX_FIFO1`，分别代表FIFO0和FIFO1
 
-- 其中`FilterMode`有两个可选值，`CAN_FILTERMODE_IDMASK`和`CAN_FILTERMODE_IDLIST`，分别表示掩码模式和列表模式
+  - 其中`FilterMode`有两个可选值，`CAN_FILTERMODE_IDMASK`和`CAN_FILTERMODE_IDLIST`，分别表示掩码模式和列表模式
   - 掩码模式：通过筛选ID特定位判断报文的接受与丢弃。**1位强制匹配，0位忽略**
   - 列表模式：列出ID，如果一致则接受，反之舍弃。
   - `FilterScale`决定列表中ID数，如果为32位，每个过滤器可写入两个ID，若为16位，每个过滤器可写入4个ID
 
-- 其中`FilterScale`有两个可选值，`CAN_FILTERSCALE_16BIT`和`CAN_FILTERSCALE_32BIT`，分别对应16位宽度和32位宽度，如果是扩展报文ID，**必须**选用32位
+  - 其中`FilterScale`有两个可选值，`CAN_FILTERSCALE_16BIT`和`CAN_FILTERSCALE_32BIT`，分别对应16位宽度和32位宽度，如果是扩展报文ID，**必须**选用32位
 
-- 其中`FilterActivation`有两个可选值，`CAN_FILTER_ENABLE`和`CAN_FILTER_DISABLE`，分别表示启动和关闭
+  - 其中`FilterActivation`有两个可选值，`CAN_FILTER_ENABLE`和`CAN_FILTER_DISABLE`，分别表示启动和关闭
 
-- 其中`SlaveStartFilterBank`应0-28的一个整数，用作第二过滤器的起始位
+  - 其中`SlaveStartFilterBank`应0-28的一个整数，用作第二过滤器的起始位
   
-- 一个配置示例
-```C
-void bsp_can_filter_config(CAN_HandleTypeDef *canHandle)
-{
-  CAN_FilterTypeDef filter = {0};
-  filter.FilterActivation = ENABLE; //使能过滤器
-  filter.FilterMode = CAN_FILTERMODE_IDMASK;    //使用掩码模式
-  filter.FilterScale = CAN_FILTERSCALE_16BIT;   //16位宽度
-  filter.FilterBank = 0;    //使用0号过滤器
-  filter.FilterFIFOAssignment = CAN_RX_FIFO0;   //使用FIFO0
-  filter.FilterIdLow = 0;   
-  filter.FilterIdHigh = 0;
-  filter.FilterMaskIdLow = 0;
-  filter.FilterMaskIdHigh = 0;  //四项均为0，
-  HAL_CAN_ConfigFilter(canHandle, &filter);
-}
-```
+  - 一个配置示例
+  ```C
+  void bsp_can_filter_config(CAN_HandleTypeDef *canHandle)
+  {
+    CAN_FilterTypeDef filter = {0};
+    filter.FilterActivation = ENABLE; //使能过滤器
+    filter.FilterMode = CAN_FILTERMODE_IDMASK;    //使用掩码模式
+    filter.FilterScale = CAN_FILTERSCALE_16BIT;   //16位宽度
+    filter.FilterBank = 0;    //使用0号过滤器
+    filter.FilterFIFOAssignment = CAN_RX_FIFO0;   //使用FIFO0
+    filter.FilterIdLow = 0;   
+    filter.FilterIdHigh = 0;
+    filter.FilterMaskIdLow = 0;
+    filter.FilterMaskIdHigh = 0;  //四项均为0，
+    HAL_CAN_ConfigFilter(canHandle, &filter);
+  }
+  ```
 
 ## CAN发送
+在HAL库中，CAN发送通过`HAL_CAN_AddTxMessage()`函数完成  
+
+其函数原型如下
+```C
+HAL_StatusTypeDef HAL_CAN_AddTxMessage(
+    CAN_HandleTypeDef *hcan,  // CAN 控制器句柄
+    const CAN_TxHeaderTypeDef *pHeader, // 消息头配置结构体
+    const uint8_t aData[],  // 数据缓冲区（最多8字节）
+    uint32_t *pTxMailbox  // 返回使用的发送邮箱编号
+    );
+```
+- `CAN_TxHeaderTypeDef`是消息头配置结构体，其定义如下
+```C
+typedef struct
+{
+  uint32_t StdId;   //标准ID
+  uint32_t ExtId;   //扩展ID
+  uint32_t IDE;     //决定使用标准ID或扩展ID
+  uint32_t RTR;     //远程传输请求位
+  uint32_t DLC;     //aData的长度(字节)
+  FunctionalState TransmitGlobalTime; //时间触发通信模式使能位(仅用于高精度时间同步场景，一般DISABLE)
+} CAN_TxHeaderTypeDef;
+```
+  - 其中`IDE`选择消息头使用哪种ID格式，可选值：`CAN_ID_STD`和`CAN_ID_EXT`，分别代表标准帧和扩展帧
+
+  - 其中`RTR`有两个可选值，`CAN_RTR_DATA`和`CAN_RTR_REMOTE`，分别表示数据帧和遥控帧
+
+  - 列表模式：列出ID，如果一致则接受，反之舍弃。
+  - `FilterScale`决定列表中ID数，如果为32位，每个过滤器可写入两个ID，若为16位，每个过滤器可写入4个ID
+
+  - 其中`FilterScale`有两个可选值，`CAN_FILTERSCALE_16BIT`和`CAN_FILTERSCALE_32BIT`，分别对应16位宽度和32位宽度，如果是扩展报文ID，**必须**选用32位
+
+  - 其中`FilterActivation`有两个可选值，`CAN_FILTER_ENABLE`和`CAN_FILTER_DISABLE`，分别表示启动和关闭
+
+  - 其中`SlaveStartFilterBank`应0-28的一个整数，用作第二过滤器的起始位
+  
+  - 一个配置示例
+  ```C
+  void bsp_can_send_msg(CAN_HandleTypeDef* canHandle,
+                uint32_t id, uint8_t* data,
+                uint32_t data_len) {
+    uint32_t* msg_box;
+    CAN_TxHeaderTypeDef send_msg_hdr;
+    send_msg_hdr.StdId = id;
+    send_msg_hdr.IDE = CAN_ID_STD;
+    send_msg_hdr.RTR = CAN_RTR_DATA;
+    send_msg_hdr.DLC = data_len;
+    send_msg_hdr.TransmitGlobalTime = DISABLE;
+
+    if (canHandle->Instance == CAN1) {
+      HAL_CAN_AddTxMessage(&hcan1, &send_msg_hdr, data, msg_box);
+    }
+    if (canHandle->Instance == CAN2) {
+      HAL_CAN_AddTxMessage(&hcan2, &send_msg_hdr, data, msg_box);
+    }
+}
+  ```
 
 ## CAN接收
+一般通过中断接受，在HAL库中，通过重定义中断回调函数`HAL_CAN_RxFifo0MsgPendingCallback()`函数完成CAN的接收
+其函数原型如下  
+```C
+__weak void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
+```
