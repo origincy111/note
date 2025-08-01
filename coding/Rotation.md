@@ -110,7 +110,7 @@ $\overrightarrow{R_z}=\begin{bmatrix}
 
 旋转顺序分为两种外旋(x->y->z)和内旋(z->y->x)  
 当使用外旋顺序时：$\overrightarrow{P}'=\overrightarrow{R}\times\overrightarrow{P}=
-(\overrightarrow{R_z}\overrightarrow{R_y} \overrightarrow{R_x})\times\overrightarrow{P}\\
+(\vec{R_z}\vec{R_y} \vec{R_x})\times\vec{P}\\
 =\left(
 \begin{bmatrix}
 \cos\gamma&-\sin\gamma&0\\
@@ -152,14 +152,28 @@ x'\\y'\\z'
 
 从四维角度来看，应包括三个两两垂直的虚部轴$i,j,k$(类似三维中的坐标轴)，和一个垂直于上述三轴的实数轴
 因此，在实际表示中，经常将实部与虚部分开，并用三维向量来表示虚部，将其表述为标量和向量的有序对形式：  
-$q=\begin{bmatrix}s&\overrightarrow{v}\end{bmatrix},其中\,\overrightarrow{v}=(\begin{matrix}x&y&z\end{matrix})\,\,,\{\begin{matrix}s&x&y&z\end{matrix}\}\subseteq\mathbb{R}$
+$q=\begin{bmatrix}s&\vec{v}\end{bmatrix},其中\,\vec{v}=(\begin{matrix}x&y&z\end{matrix})\,\,,\{\begin{matrix}s&x&y&z\end{matrix}\}\subseteq\mathbb{R}$
+
+在物理上，四元数可以描述一个物体的姿态，也可以描述一个问题的旋转
 
 ### 2. 四元数的性质
+
 - 四元数乘法
   - **四元数乘法不满足交换律**
-    | -   | 乘法法则 | 1   | i   | j   | k |
-    | --- | -------- | --- | --- | --- |
-    | 1   | 1        | i   | j   | k   |
-    | i   | i        | -1  | k   | -j  |
-    | j   | j        | -k  | -1  | i   |
-    | k   | k        | j   | -i  | -1  |
+    | 乘法法则 | 1   | i   | j   | k   |
+    | -------- | --- | --- | --- | --- |
+    | 1        | 1   | i   | j   | k   |
+    | i        | i   | -1  | k   | -j  |
+    | j        | j   | -k  | -1  | i   |
+    | k        | k   | j   | -i  | -1  |
+  - 在物理上，也可以解释为何不满足交换律
+    - 1. 左乘旋转四元数(左为操作动作，右为被操作对象)
+         ![](ROT_img/1.gif)
+    - 2. 右乘旋转四元数(右为操作动作，左为被操作对象)
+         ![](ROT_img/2.gif)
+- 纯四元数
+    如果一个四元数可以被写成$v=\begin{bmatrix}0&\vec{u}\end{bmatrix},$ 则称$v$为一个纯四元数
+- 四元数的共轭
+  - 向量角度：$q=\begin{bmatrix} a \\ b \\ c \\ d \end{bmatrix}\xrightarrow{共轭}q^*\begin{bmatrix} a \\ -b \\ -c \\ -d \end{bmatrix}$
+  - 复数角度：$q=\begin{bmatrix}s&\vec{u}\end{bmatrix}\xrightarrow{共轭}q^*=\begin{bmatrix}s&-\vec{u}\end{bmatrix}$
+- 当四元数模值为1，则该四元数被称为单位四元数
