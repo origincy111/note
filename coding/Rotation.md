@@ -34,9 +34,9 @@
 $  
    ${^A_B R}$表示向量$P$由坐标轴$B$变换至坐标轴$A$的旋转矩阵
   其中：  
-   $\begin{matrix}a_x & b_y & c_z\end{matrix}$为坐标系$B$中各个轴在坐标系$A$中$x$轴上的投影  
-   $\begin{matrix}a_x & b_y & c_z\end{matrix}$为坐标系$B$中各个轴在坐标系$A$中$y$轴上的投影  
-   $\begin{matrix}a_x & b_y & c_z\end{matrix}$为坐标系$B$中各个轴在坐标系$A$中$z$轴上的投影  
+   $\begin{pmatrix}a_x & b_y & c_z\end{pmatrix}$为坐标系$B$中各个轴在坐标系$A$中$x$轴上的投影  
+   $\begin{pmatrix}a_x & b_y & c_z\end{pmatrix}$为坐标系$B$中各个轴在坐标系$A$中$y$轴上的投影  
+   $\begin{pmatrix}a_x & b_y & c_z\end{pmatrix}$为坐标系$B$中各个轴在坐标系$A$中$z$轴上的投影  
    **易得出**:
   ${^A_BR}\times{P_B}=\begin{bmatrix}
  a_x & b_x & c_x \\
@@ -66,14 +66,8 @@ $
 坐标变换=旋转+平移，即：
 $P_A={^A_BR}\times{P_B}+\overrightarrow{O_1O_2}$，$\overrightarrow{O_1O_2}$为两坐标系原点指向另一原点的向量  
 改写为矩阵形式：  
-$\begin{bmatrix}P_A\\1\end{bmatrix}=
-\begin{bmatrix}^A_BR&\overrightarrow{O_1O_2}\\
-0&1\end{bmatrix}\times
-\begin{bmatrix}P_B\\1\end{bmatrix},令T=
-\begin{bmatrix}^A_BR&\overrightarrow{O_1O_2}\\
-0&1\end{bmatrix}\
-$  
-可得：${^AP}=T\times{^BP},其中T为齐次旋转矩阵$
+$\begin{bmatrix}P_A\\1\end{bmatrix}=\begin{bmatrix}^A_BR&\overrightarrow{O_1O_2}\\0&1\end{bmatrix}\times\begin{bmatrix}P_B\\1\end{bmatrix},令T=\begin{bmatrix}^A_BR&\overrightarrow{O_1O_2}\\0&1\end{bmatrix}$ 
+可得：${^AP}=T\times{^BP},\text{其中T为齐次旋转矩阵}$
 
 ---
 
@@ -240,7 +234,7 @@ $q=\begin{bmatrix}s&\vec{v}\end{bmatrix},其中\,\vec{v}=(\begin{matrix}x&y&z\en
   V'&=\overrightarrow{V}_\parallel+((\cos\theta) \overrightarrow{V}_\perp+(\sin\theta) \overrightarrow{U} \times \overrightarrow{V})\\
   &=\overrightarrow{V}_\parallel+((\cos\theta)\begin{bmatrix}0&\overrightarrow{V}_\perp'\end{bmatrix}+(\sin\theta)UV_\perp')\\
   &=\overrightarrow{V}_\parallel+((\cos\theta)+(\sin\theta)U)V_\perp'\\
-  &\xlongequal{\text{令}q=[\cos\theta\,\,\sin\theta U]}\overrightarrow{V}_\parallel+qV_\perp'
+  &\xrightarrow{\text{令}q=[\cos\theta\,\,\sin\theta U]}\overrightarrow{V}_\parallel+qV_\perp'
   \end{aligned}
   $$
 - 给出两条定理：
@@ -250,7 +244,7 @@ $q=\begin{bmatrix}s&\vec{v}\end{bmatrix},其中\,\vec{v}=(\begin{matrix}x&y&z\en
  
   $$
   \begin{aligned}
-  V'&=\overrightarrow{V}_\parallel+qV_\perp'\xlongequal{\text{设}q=1=p^2}1\times\overrightarrow{V}_\parallel+p^2V_\perp'=pp^{-1}\times\overrightarrow{V}_\parallel+p^2V_\perp'\\
+  V'&=\overrightarrow{V}_\parallel+qV_\perp'\xrightarrow{\text{设}q=1=p^2}1\times\overrightarrow{V}_\parallel+p^2V_\perp'=pp^{-1}\times\overrightarrow{V}_\parallel+p^2V_\perp'\\
   &=pp^{-1}\times\begin{bmatrix}0&\overrightarrow{V}_\parallel'\end{bmatrix}+p^2V_\perp'=pp^{-1}\times V_\parallel'+p^2V_\perp'\\
   &=p(V_\parallel'+V_\perp)p^*=pV'p^{-1}
   \end{aligned}
@@ -271,75 +265,68 @@ $q=\begin{bmatrix}s&\vec{v}\end{bmatrix},其中\,\vec{v}=(\begin{matrix}x&y&z\en
 - 通过上文推导出的[四元数乘法的矩阵形式](#target)可以实现四元数向旋转矩阵的转换
 $$
 \begin{aligned}
-
-V'&=qVq^*=L(q)R(q^*)C\qquad\qquad(L(q)代表左乘矩阵，R(q)代表右乘矩阵)\\
-
-&=
-\begin{bmatrix}
-  a&-b&-c&-d\\
-  b&a&-d&c\\
-  c&d&a&-b\\
-  d&-c&b&a\\
-\end{bmatrix}
-\begin{bmatrix}
-  a&b&c&d\\
-  -b&a&-d&c\\
-  -c&d&a&-b\\
-  -d&-c&b&a\\
-\end{bmatrix}
-v\\
-
-&=
-\begin{bmatrix}
-  a^2+b^2+c^2+d^2&ab-ab-cd+cd&ac+bd-ac-bd&ad-bc+bc-ad\\
-  ab-ab+cd-cd&b^2+a^2-d^2-c^2&bc-ad-ad+bc&bd+ac+bd+ac\\
-  ac-bd-ac+bd&bc+ad+ad+bc&c^2-d^2+a^2-b^2&cd+cd-ab-ab\\
-  ad+bc-bc-ad&bd-ac+bd-ac&cd+cd+ab+ab&d^2-c^2-b^2+a^2
-\end{bmatrix}v\\
-
-&=
-\begin{bmatrix}
-  1&0&0&0\\
-  0&1-2c^2-2d^2&2bc-2ad&2ac+2bd\\
-  0&2bc+2ad&1-2b^2-2d^2&2cd-2ab\\
-  0&2bd-2ac&2cd+2ab&1-2b^2-2c^2
-\end{bmatrix}v
-
+V' &= qVq^* = L(q)R(q^*)V \qquad \qquad \text{(L(q)代表左乘矩阵，R(q)代表右乘矩阵)}\\
+&= \begin{bmatrix}
+    a & -b & -c & -d \\
+    b & a & -d & c \\
+    c & d & a & -b \\
+    d & -c & b & a
+  \end{bmatrix}
+  \begin{bmatrix}
+    a & b & c & d \\
+    -b & a & -d & c \\
+    -c & d & a & -b \\
+    -d & -c & b & a
+  \end{bmatrix} V\\
+&= \begin{bmatrix}
+  a^2+b^2+c^2+d^2 & ab-ab-cd+cd & ac+bd-ac-bd & ad-bc+bc-ad \\
+  ab-ab+cd-cd & b^2+a^2-d^2-c^2 & bc-ad-ad+bc & bd+ac+bd+ac \\
+  ac-bd-ac+bd & bc+ad+ad+bc & c^2-d^2+a^2-b^2 & cd+cd-ab-ab \\
+  ad+bc-bc-ad & bd-ac+bd-ac & cd+cd+ab+ab & d^2-c^2-b^2+a^2
+  \end{bmatrix} V \\
+&= \begin{bmatrix}
+  1 & 0 & 0 & 0 \\
+  0 & 1-2c^2-2d^2 & 2bc-2ad & 2ac+2bd \\
+  0 & 2bc+2ad & 1-2b^2-2d^2 & 2cd-2ab \\
+  0 & 2bd-2ac & 2cd+2ab & 1-2b^{2}-2c^{2}
+  \end{bmatrix} V
 \end{aligned}
-$$ 
-
-#### 四元数与欧拉角的转化
 $$
 
+
+#### 四元数与欧拉角的转化  
+
+$$
 q=\begin{bmatrix}
   s\\x\\y\\z
 \end{bmatrix}
-=
-
-\begin{bmatrix}
-  \cos\displaystyle \frac{\varphi}{2}\cos\displaystyle \frac{\theta}{2}\cos\displaystyle \frac{\psi}{2}+\sin\displaystyle \frac{\varphi}{2}\sin\displaystyle \frac{\theta}{2}\sin\displaystyle \frac{\psi}{2}\\[10pt]
-
-  \cos\displaystyle \frac{\varphi}{2}\sin\displaystyle \frac{\theta}{2}\cos\displaystyle \frac{\psi}{2}+\sin\displaystyle \frac{\varphi}{2}\cos\displaystyle \frac{\theta}{2}\sin\displaystyle \frac{\psi}{2}\\[10pt]
-
-  \cos\displaystyle \frac{\varphi}{2}\cos\displaystyle \frac{\theta}{2}\sin\displaystyle \frac{\psi}{2}-\sin\displaystyle \frac{\varphi}{2}\sin\displaystyle \frac{\theta}{2}\cos\displaystyle \frac{\psi}{2}\\[10pt]
-  
-  \sin\displaystyle \frac{\varphi}{2}\cos\displaystyle \frac{\theta}{2}\cos\displaystyle \frac{\psi}{2}-\cos\displaystyle \frac{\varphi}{2}\sin\displaystyle \frac{\theta}{2}\sin\displaystyle \frac{\psi}{2}
-\end{bmatrix}\\[10pt]
-
-\begin{bmatrix}
-  \varphi\\\theta\\\psi
+=\begin{bmatrix}
+  \cos \frac{\varphi}{2}\cos \frac{\theta}{2}\cos \frac{\psi}{2} + \sin \frac{\varphi}{2}\sin \frac{\theta}{2}\sin \frac{\psi}{2}\\
+  \cos \frac{\varphi}{2}\sin \frac{\theta}{2}\cos \frac{\psi}{2} + \sin \frac{\varphi}{2}\cos \frac{\theta}{2}\sin \frac{\psi}{2}\\
+  \cos \frac{\varphi}{2}\cos \frac{\theta}{2}\sin  \frac{\psi}{2} - \sin \frac{\varphi}{2}\sin \frac{\theta}{2}\cos \frac{\psi}{2}\\
+  \sin \frac{\varphi}{2}\cos \frac{\theta}{2}\cos \frac{\psi}{2} - \cos \frac{\varphi}{2}\sin \frac{\theta}{2}\sin \frac{\psi}{2}
 \end{bmatrix}
-=
-\begin{bmatrix}
-  \arctan(\displaystyle \frac{2(sz+xy)}{1-2(z^2+x^2)})\\
-  \arcsin(2(sz-yz))\\
-  \arctan(\displaystyle \frac{2(sy+zx)}{1-2(x^2+y^2)})
-\end{bmatrix},
-其中：\begin{cases}
-\varphi为绕x轴旋转角度，即滚转角\text{roll}\\
-\theta为绕y轴旋转角度，即俯仰角\text{pitch}\\
-\psi为绕z轴旋转角度，即偏航角\text{yaw}
-\end{cases}
 $$
+
+$$
+  \begin{bmatrix}
+    \varphi\\
+    \theta\\
+    \psi
+  \end{bmatrix}
+  =\begin{bmatrix}
+    \arctan(\displaystyle \frac{2(sz+xy)}{1-2(z^2+x^2)})\\
+    \arcsin(2(sz-yz))\\
+    \arctan(\displaystyle \frac{2(sy+zx)}{1-2(x^2+y^2)})
+  \end{bmatrix},
+  \text{其中：}
+  \begin{cases}
+    \varphi \text{为绕x轴旋转角度，即滚转角roll}\\
+    \theta \text{为绕y轴旋转角度，即俯仰角pitch}\\
+    \psi \text{为绕z轴旋转角度，即偏航角yaw}
+  \end{cases}
+%Latex矩阵能不换行不换行，能不空格不空格
+$$
+
 在程序中可以使用atan2函数。该函数有两个参数，分别为所求点的x值和y值，返回值是角度值，上述式子中，分子为参数1，分母为参数2
 

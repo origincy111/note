@@ -1,0 +1,30 @@
+
+$$
+\begin{aligned}
+V' &= qVq^* = L(q)R(q^*)V \qquad \qquad\text{(L(q)代表左乘矩阵，R(q)代表右乘矩阵)}\\
+&= \begin{bmatrix}
+    a & -b & -c & -d \\
+    b & a & -d & c \\
+    c & d & a & -b \\
+    d & -c & b & a 
+  \end{bmatrix}
+  \begin{bmatrix}
+    a & b & c & d \\
+    -b & a & -d & c \\
+    -c & d & a & -b \\
+    -d & -c & b & a 
+  \end{bmatrix} V \\
+&= \begin{bmatrix}
+  a^2+b^2+c^2+d^2 & ab-ab-cd+cd & ac+bd-ac-bd & ad-bc+bc-ad \\
+  ab-ab+cd-cd & b^2+a^2-d^2-c^2 & bc-ad-ad+bc & bd+ac+bd+ac \\
+  ac-bd-ac+bd & bc+ad+ad+bc & c^2-d^2+a^2-b^2 & cd+cd-ab-ab \\
+  ad+bc-bc-ad & bd-ac+bd-ac & cd+cd+ab+ab & d^2-c^2-b^2+a^2
+  \end{bmatrix} V \\
+&= \begin{bmatrix}
+  1 & 0 & 0 & 0 \\
+  0 & 1-2c^2-2d^2 & 2bc-2ad & 2ac+2bd \\
+  0 & 2bc+2ad & 1-2b^2-2d^2 & 2cd-2ab \\
+  0 & 2bd-2ac & 2cd+2ab & 1-2b^{2}-2c^{2}
+  \end{bmatrix} V
+\end{aligned}
+$$
