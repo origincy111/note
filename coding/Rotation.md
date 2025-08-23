@@ -234,7 +234,7 @@ $q=\begin{bmatrix}s&\vec{v}\end{bmatrix},其中\,\vec{v}=(\begin{matrix}x&y&z\en
   V'&=\overrightarrow{V}_\parallel+((\cos\theta) \overrightarrow{V}_\perp+(\sin\theta) \overrightarrow{U} \times \overrightarrow{V})\\
   &=\overrightarrow{V}_\parallel+((\cos\theta)\begin{bmatrix}0&\overrightarrow{V}_\perp'\end{bmatrix}+(\sin\theta)UV_\perp')\\
   &=\overrightarrow{V}_\parallel+((\cos\theta)+(\sin\theta)U)V_\perp'\\
-  &\xrightarrow{\text{令}q=[\cos\theta\,\,\sin\theta U]}\overrightarrow{V}_\parallel+qV_\perp'
+  &\xlongequal{\text{令}q=[\cos\theta\,\,\sin\theta U]}\overrightarrow{V}_\parallel+qV_\perp'
   \end{aligned}
   $$
 - 给出两条定理：
@@ -301,10 +301,10 @@ q=\begin{bmatrix}
   s\\x\\y\\z
 \end{bmatrix}
 =\begin{bmatrix}
-  \cos \frac{\varphi}{2}\cos \frac{\theta}{2}\cos \frac{\psi}{2} + \sin \frac{\varphi}{2}\sin \frac{\theta}{2}\sin \frac{\psi}{2}\\
-  \cos \frac{\varphi}{2}\sin \frac{\theta}{2}\cos \frac{\psi}{2} + \sin \frac{\varphi}{2}\cos \frac{\theta}{2}\sin \frac{\psi}{2}\\
-  \cos \frac{\varphi}{2}\cos \frac{\theta}{2}\sin  \frac{\psi}{2} - \sin \frac{\varphi}{2}\sin \frac{\theta}{2}\cos \frac{\psi}{2}\\
-  \sin \frac{\varphi}{2}\cos \frac{\theta}{2}\cos \frac{\psi}{2} - \cos \frac{\varphi}{2}\sin \frac{\theta}{2}\sin \frac{\psi}{2}
+  \cos \displaystyle \frac{\varphi}{2}\cos \displaystyle \frac{\theta}{2}\cos \displaystyle \frac{\psi}{2} + \sin \displaystyle \frac{\varphi}{2}\sin \displaystyle \frac{\theta}{2}\sin \displaystyle \frac{\psi}{2}\\[10pt]
+  \cos \displaystyle \frac{\varphi}{2}\sin \displaystyle \frac{\theta}{2}\cos \displaystyle \frac{\psi}{2} + \sin \displaystyle \frac{\varphi}{2}\cos \displaystyle \frac{\theta}{2}\sin \displaystyle \frac{\psi}{2}\\[10pt]
+  \cos \displaystyle \frac{\varphi}{2}\cos \displaystyle \frac{\theta}{2}\sin  \displaystyle \frac{\psi}{2} - \sin \displaystyle \frac{\varphi}{2}\sin \displaystyle \frac{\theta}{2}\cos \displaystyle \frac{\psi}{2}\\[10pt]
+  \sin \displaystyle \frac{\varphi}{2}\cos \displaystyle \frac{\theta}{2}\cos \displaystyle \frac{\psi}{2} - \cos \displaystyle \frac{\varphi}{2}\sin \displaystyle \frac{\theta}{2}\sin \displaystyle \frac{\psi}{2}
 \end{bmatrix}
 $$
 
